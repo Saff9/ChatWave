@@ -29,11 +29,47 @@ export const AuthProvider = ({ children }) => {
     return () => subscription.unsubscribe()
   }, [])
 
+  const signUp = async (email, password) => {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+    })
+    if (error) throw error
+    return data
+  }
+
+  const signIn = async (email, password) => {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    })
+    if (error) throw error
+    return data
+  }
+
   const signInWithGoogle = async () => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
     })
     if (error) throw error
+  }
+
+  const signInAsGuest = async () => {
+    const guestEmail = `guest_${Date.now()}@chatwave.demo`
+    const guestPassword = Math.random().toString(36).slice(-12)
+
+    const { data, error } = await supabase.auth.signUp({
+      email: guestEmail,
+      password: guestPassword,
+      options: {
+        data: {
+          is_guest: true,
+          display_name: 'Guest User',
+        }
+      }
+    })
+    if (error) throw error
+    return data
   }
 
   const signOut = async () => {
@@ -43,7 +79,10 @@ export const AuthProvider = ({ children }) => {
 
   const value = {
     user,
+    signUp,
+    signIn,
     signInWithGoogle,
+    signInAsGuest,
     signOut,
     loading,
   }
